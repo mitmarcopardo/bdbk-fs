@@ -28,9 +28,12 @@ function CreateForm(props){
   const ctx = useContext(UserContext);
 
   function handle(){
-    
-    ctx.users.push({name, email, password, balance: 100});
-    console.log(ctx);
+    const url = `http://localhost:3001/account/create/${name}/${email}/${password}`
+    async (url) => {
+      const res =  fetch(url);
+      const data = res.json();
+      console.log(data);
+  }
     props.setShow(false);
 
   }

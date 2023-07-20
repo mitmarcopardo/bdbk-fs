@@ -1,14 +1,22 @@
-import React from "react";
-import UserContext from './context.jsx';
+import { useEffect, useState } from "react";
+
 
 function AllData(){
+    const [data, setData] = useState('');
 
-    const ctx = React.useContext(UserContext);
+    useEffect( () => {
+        fetch('http://localhost:3001/account/all')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            setData(JSON.stringify(data));
+        });
+    }, []);
 
     return(
     <>
     <h1> AllData Page</h1>
-    {JSON.stringify(ctx.users)};
+    {data};
     </>);
 }
 

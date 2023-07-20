@@ -32,10 +32,10 @@ function NavBar(){
           <Nav.Link as={Link} to="/">Home</Nav.Link>
             <NavDropdown title="Account" id="basic-nav-dropdown">
               <NavDropdown.Item as={Link} to="/login">Login</NavDropdown.Item>
+              <NavDropdown.Divider />
               <NavDropdown.Item as={Link} to="/deposit">Deposit</NavDropdown.Item>
               <NavDropdown.Item as={Link} to="/withdraw"> Withdraw </NavDropdown.Item>
               <NavDropdown.Item as={Link} to="/balance">Balance</NavDropdown.Item>
-              <NavDropdown.Divider />
               <NavDropdown.Item as={Link} to="/alldata">
                 All Data
               </NavDropdown.Item>
