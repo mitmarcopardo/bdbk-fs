@@ -3,7 +3,7 @@
 //import mongoose from 'mongoose';
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
-const uri = "mongodb+srv://pardovmarco:8RpH0ODRSpjsBDkw@cluster0.bs2zqyr.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://doadmin:Y9C3657R012MhioV@badbankdb-4d20808f.mongo.ondigitalocean.com/admin?authSource=admin&tls=true";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -19,7 +19,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    await client.db("admin");
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error

@@ -2,7 +2,7 @@
 
 import express from "express";
 import cors from 'cors';
-import * as dal from './dal_atlas.js' 
+import * as dal from './dal_local.js' 
 
 
 //const express = require('express');
@@ -15,34 +15,35 @@ app.use(cors());
 
 //////////// ------------- Create User with DAL
 
-app.get('/account/create/:name/:email/:password', function (req, res){
+app.get('/account/create/:name/:email/:password/:sudo', function (req, res){
     // else create user
-    const dalf = dal.createUser(req.params.name, req.params.email, req.params.password)
+    const dalf = dal.createUser(req.params.name, req.params.email, req.params.password, req.params.sudo)
     .then( (user) => {
+        console.log('on port 3001!', req.params.sudo);
         console.log(user);
         res.send(user);
     } );
 });
 
 
-//////////// ------------- Create User withou DAL
-/*
-// create account
-app.get('/account/create/:name/:email/:password', function (req, res){
-    res.send({
-        name: req.params.name,
-        email: req.params.email,
-        password: req.params.password
-    })
-});
-*/
 
 // login user
 app.get('/account/login/:email/:password', function (req, res){
-    res.send({
-        email: req.params.email,
-        password: req.params.password
+    const dalf = dal.login(req.params.email, req.params.password)
+    .then((doc) => {
+        console.log(doc);
+        res.send(doc);
     })
+    .catch((error) => console.error("Error:", error));
+});
+
+// search user
+app.get('/account/search/:email', function (req, res){
+    const dalf = dal.search(req.params.email)
+    .then((doc) => {
+        res.send(doc);
+    })
+    .catch((error) => console.error("Error:", error));
 });
 
 // Deposit
@@ -59,20 +60,6 @@ app.get('/account/all', function (req, res){
         res.send(docs);
     });
 });
-
-
-
-//////////// ------------- all accounts withou DAL
-/*
-// all accounts
-app.get('/account/all', function (req, res){
-    res.send({
-        name: 'peter',
-        email: 'peter@mit.edu',
-        password: 'secret'
-    })
-});
-*/
 
 app.get("/api/v1/hello", (_req, res) => {
   res.json({ message: "Hello, world!" });

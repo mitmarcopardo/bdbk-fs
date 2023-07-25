@@ -1,10 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { Card, Button } from 'react-bootstrap';
 import { UserContext,  Cards } from './context';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
+import Form from 'react-bootstrap/Form';
 
 function CreateAccount(){
   const [show, setShow] = useState(true);
@@ -16,7 +18,7 @@ function CreateAccount(){
       <Cards
         header="Create Account"
         status={status}
-        body={show ? ( showModal ? ( <Popup setShow={setShow} setShowModal={setShowModal} /> ) : (<CreateForm setShow={setShow} setShowModal={setShowModal}/>) ) : ( <CreateMsg setShow={setShow} />)}
+        body={show ? ( showModal ? ( <Popup setShow={setShow} setShowModal={setShowModal} /> ) : (<CreateForm setShow={setShow} setShowModal={setShowModal} setStatus={setStatus}/>) ) : ( <CreateMsg setShow={setShow} />)}
       />
 
     </>);
@@ -26,46 +28,117 @@ function CreateForm(props){
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [sudo, setSudo] = useState(false);
+  const [count, setCount] = useState(1);
   const ctx = useContext(UserContext);
 
+  const handleOnChange = () => {
+    setCount(count + 1);
+    console.log(count);
+  };
 
   async function Handle(){
 
-    const url = `http://localhost:3001/account/create/${name}/${email}/${password}`
- 
+    if(Search(email)){
 
-      fetch(url)
-      .then(response => response.json())
-      .then(data => console.log(data))
-      .catch((error) => console.error("Error:", error));
-
+    const url = `http://localhost:3001/account/create/${name}/${email}/${password}/${!sudo}`
+    fetch(url)
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch((error) => console.error("Error:", error));
+    
     }
 
+  }
+
+  useEffect( () => {
+    setSudo(!sudo);
+  },[count])
+
+  function loggedIn(){
+    if (!validateField(name,        'name'))       return;
+    if (!validateField(email,        'email'))       return;
+    if (!validateField(password,     'password'))    return;
+    if (!pwLength(password,     'password'))    return;
+
+    Handle();
+  }
+
+  async function Search(email){
+    
+    const url = `http://localhost:3001/account/search/${email}`
+ 
+      fetch(url)
+      .then(async response => {
+        try{
+          const data = await response.json()
+          console.log(data);
+          if(data.length === 0) { 
+              return true
+          }else{
+            props.setStatus('Error: User already exist ( Email )');
+            setTimeout( () => props.setStatus(' '),3000);
+          return false;
+            }
+        }catch(error){
+            console.log('Error happened here!')
+            console.error(error)
+            return false;
+          }
+    })
+  }
+
+  function validateField(field, label){
+    if (!field){
+        props.setStatus('Error: ' + label);
+        setTimeout( () => props.setStatus(''),3000);
+        return false;
+    }
+    return true;
+  }
+
+  function pwLength(field, label){
+    if (field.lenght<8){
+        props.setStatus('Error: ',label, ' Password must be longer the 8 characters');
+        setTimeout( () => props.setStatus(''),3000);
+        return false;
+    }
+    return true;
+  }
 
 
-  return(
-      <>
-        
-          <Card.Text className='txt-body'>
-            Name<br/>
-            <input type="input" className="from-control" id="name"
-            placeholder="Enter name" value={name} onChange={ e => setName(e.currentTarget.value) }/><p/>
-            
-            Email Address<br/>
-            <input type="input" className="from-control" id="email"
-            placeholder="Enter email" value={email} onChange={ e => setEmail(e.currentTarget.value) }/><p/>
-            
-            Password<br/>
-            <input type="input" className="from-control" id="password"
-            placeholder="Enter Password" value={password} onChange={ e => setPassword(e.currentTarget.value) }/><p/>
+return(
+    <>
+      
+        <Card.Text className='txt-body'>
+          Name<br/>
+          <input type="input" className="from-control" id="name"
+          placeholder="Enter name" value={name} onChange={ e => setName(e.currentTarget.value) }/><p/>
+          
+          Email Address<br/>
+          <input type="input" className="from-control" id="email"
+          placeholder="Enter email" value={email} onChange={ e => setEmail(e.currentTarget.value) }/><p/>
+          
+          Password<br/>
+          <input type="password" className="from-control" id="password"
+          placeholder="Enter Password" value={password} onChange={ e => setPassword(e.currentTarget.value) }/><p/>
 
-            <button type="submit" className="btn btn-primary" onClick={() => {
-              Handle();
-              props.setShowModal(true);
-              }}>Create</button>
-          </Card.Text>
-        
-  </>);
+          Super User
+                <Form.Check className='d-flex mx-auto mb-4 justify-content-center text-center' // prettier-ignore
+                  type="switch"
+                  id="custom-switch"
+                  checked={count % 2  === 0  ? (true) : (false)}
+                  onChange={ handleOnChange }
+                />
+
+          
+          <button type="submit" className="btn btn-primary" onClick={() => {
+            loggedIn();
+            props.setShowModal(true);
+            }}>Create</button>
+        </Card.Text>
+      
+</>);
 }
 
 function CreateMsg(props){
@@ -87,7 +160,7 @@ function Popup(props) {
                                   setShow(false);
                                   props.setShowModal(false);
                                   props.setShow(false);
-                                  }, 8000)} animation={true}>
+                                  }, 5000)} animation={true}>
         <Modal.Header className='justify-content-center'>
           <Modal.Title>Creating Account!</Modal.Title>
         </Modal.Header>

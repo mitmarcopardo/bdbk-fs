@@ -3,7 +3,7 @@
 //import mongoose from 'mongoose';
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
-const uri = "mongodb+srv://pardovmarco:8RpH0ODRSpjsBDkw@cluster0.bs2zqyr.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb://localhost:27017";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -28,15 +28,15 @@ async function run() {
 }
 run().catch(console.dir);
 
-export async function createUser( name, email, password ) {
+export async function createUser( name, email, password, sudo ) {
     try {
         const client = new MongoClient(uri);
         const database = client.db("myProject");
         const collection = database.collection("users");
         // create a document to insert
-        const doc = {name, email, password, balance : 0};
+        const doc = {"name":name, "email":email, "password": password, "balance" : 0, "admin" : sudo};
         const result = await collection.insertOne(doc,{w:1});
-        console.log(`New listing created with the follwoing id: ${result.insertedId}`)
+        console.log(`New listing created with the follwoing id: ${result.insertedId} and SUDO: ${sudo}`)
         return result;
     } finally {
         await client.close();
@@ -65,7 +65,12 @@ export async function login(email, password){
 
     client.connect();
 
-    const result   = await client.db("myProject").collection("users").find({email:email , password:password},{projection:{ _id: 0 }},
+    const result   = await client.db("myProject").collection("users").find(
+      {
+        $and:[{email:{$in:[email]}},{password:{$in:[password]}}]
+        
+      }
+      ,{projection:{ _id: 0 }},
     ).toArray();
 
     if(result){
@@ -77,4 +82,24 @@ export async function login(email, password){
     
 
     return JSON.stringify(result)
+}
+
+export async function search(email, password){
+  const client = new MongoClient(uri);
+
+  client.connect();
+
+  const result   = await client.db("myProject").collection("users").find(
+    { email:email },
+    { projection:{ _id: 0, name: 0, password:0, balance:0, admin:0 } },
+  ).toArray();
+
+  if(result){
+      console.log(result);
+  }else{
+      console.log('not found')
+  }
+  
+
+  return JSON.stringify(result)
 }
